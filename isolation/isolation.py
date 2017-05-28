@@ -114,6 +114,7 @@ class Board(object):
         isolation.Board
             A deep copy of the board with the input move applied.
         """
+        print(str(self._active_player) + "forecast" + str(move) )
         new_board = self.copy()
         new_board.apply_move(move)
         return new_board
@@ -323,6 +324,7 @@ class Board(object):
 
             move_start = time_millis()
             time_left = lambda : time_limit - (time_millis() - move_start)
+
             curr_move = self._active_player.get_move(game_copy, time_left)
             move_end = time_left()
 
@@ -330,7 +332,8 @@ class Board(object):
                 curr_move = Board.NOT_MOVED
 
             if move_end < 0:
-                return self._inactive_player, move_history, "timeout"
+                print ("exhasuted time")
+                #return self._inactive_player, move_history, "timeout"
 
             if curr_move not in legal_player_moves:
                 if len(legal_player_moves) > 0:
