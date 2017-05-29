@@ -229,11 +229,33 @@ class MinimaxPlayer(IsolationPlayer):
 
         _, move = max([(self.min_value(game.forecast_move(m), depth), m) for m in legal_moves])
 
-        #_, move = max([(self.score(game.forecast_move(m), self), m) for m in legal_moves])
         print ("for board state: " )
         print ( game.to_string())
         print("--> minimax move: " + str(move))
         return move
+
+
+    def max_value(self, game, depth) :
+
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+            #print("ignored timeout")
+
+        legal_moves = game.get_legal_moves(game.active_player)
+
+        depth -= 1
+        print("depth " + str(depth))
+        if depth == 0 or not legal_moves:
+            print ("leaf max")
+            v =  self.score(game, self )
+            print(str(v))
+            return v
+
+        print("legal moves for max " + str(game.active_player) + ": " + str(legal_moves))
+
+        v,m = max([(self.min_value(game.forecast_move(m), depth), m) for m in legal_moves])
+        print("max choose move:  " + str(m) + " with value: " + str(v))
+        return v
 
     def min_value(self, game, depth):
         """Helper function of min_player
@@ -276,27 +298,6 @@ class MinimaxPlayer(IsolationPlayer):
         print("min choose move: " + str(m) + " with value: " + str(v))
         return v
 
-    def max_value(self, game, depth) :
-
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
-            #print("ignored timeout")
-
-        legal_moves = game.get_legal_moves(game.active_player)
-
-        depth -= 1
-        print("depth " + str(depth))
-        if depth == 0 or not legal_moves:
-            print ("leaf max")
-            v =  self.score(game, self )
-            print(str(v))
-            return v
-
-        print("legal moves for max " + str(game.active_player) + ": " + str(legal_moves))
-
-        v,m = max([(self.min_value(game.forecast_move(m), depth), m) for m in legal_moves])
-        print("max choose move:  " + str(m) + " with value: " + str(v))
-        return v
 
 class AlphaBetaPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using iterative deepening minimax
@@ -343,7 +344,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            return self.alphabeta(game, depth=self.search_depth)
+            return self.alphabeta(game, depth=self.search_depth )
 
         except SearchTimeout:
             pass  # Handle any actions required after timeout as needed
@@ -352,7 +353,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         return best_move
 
 
-    def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
+    def alphabeta(self, game, depth):
         """Implement depth-limited minimax search with alpha-beta pruning as
         described in the lectures.
 
@@ -400,17 +401,96 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
+            #print("ignored timeout")
 
         legal_moves = game.get_legal_moves(game.active_player)
 
         if not legal_moves:
             return (-1, -1)
 
-        #_, move = max([(self.min_value(game.forecast_move(m), depth), m) for m in legal_moves])
-        move = legal_moves[0]
 
-        #_, move = max([(self.score(game.forecast_move(m), self), m) for m in legal_moves])
+
+        _,move = max([(self.max_value(game.forecast_move(m), depth, alpha=float("-inf"), beta=float("inf")), m) for m in legal_moves])
+
         print ("for board state: " )
         print ( game.to_string())
-        print("--> minimax move: " + str(move))
-        return move
+        print("--> alphabeta move: " + str(move))
+        return   move
+
+    def max_value(self, game, depth, alpha=float("-inf"), beta=float("inf")) :
+
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+            #print("ignored timeout")
+
+        legal_moves = game.get_legal_moves(game.active_player)
+
+        depth -= 1
+        print("depth " + str(depth))
+
+        if not legal_moves:
+            print ("leaf max")
+            v =  self.score(game, self )
+            print(str(v))
+            return v
+
+        print("legal moves for max " + str(game.active_player) + ": " + str(legal_moves))
+        v = float("-inf")
+
+        for m in legal_moves:
+            v =max(v, self.min_value(game.forecast_move(m), depth, alpha=alpha, beta=beta) )
+            if v >= beta:
+                print("max choose move (v  >= Beta):  " + str(m) + " with value: " + str(v))
+                return v
+            alpha = max(alpha,v)
+
+
+        return v
+
+    def min_value(self, game, depth, alpha=float("-inf"), beta=float("inf")):
+        """Helper function of min_player
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        player : hashable
+            One of the objects registered by the game object as a valid player.
+            (i.e., `player` should be either game.__player_1__ or
+            game.__player_2__).
+
+        Returns
+        ----------
+        float
+            The min value of the current game state
+        """
+
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+            #print("ignored timeout")
+
+        legal_moves = game.get_legal_moves(game.active_player)
+
+
+        depth -= 1
+        print("depth " + str(depth))
+
+        if not legal_moves:
+            print ("leaf min")
+            v =  self.score(game, self )
+            print(str(v))
+            return v
+
+        print("legal moves for min " + str(game.active_player) + ": " + str(legal_moves))
+        v = float("inf")
+
+        for m in legal_moves:
+            v = min(v, self.max_value(game.forecast_move(m), depth, alpha=alpha, beta=beta) )
+            if v <= alpha:
+                print("min choose move (v  <= Alpha):  " + str(m) + " with value: " + str(v))
+                return v
+            beta = min(beta,v)
+
+        return v

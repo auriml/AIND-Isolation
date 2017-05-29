@@ -259,13 +259,13 @@ if __name__ == "__main__":
     # create an isolation board (by default 7x7)
     #player1 = RandomPlayer()
     player1 = AlphaBetaPlayer()
-    player2 = RandomPlayer()
-    game = Board(player1, player2, width=9, height=9)
+    player2 = MinimaxPlayer()
+    game = Board(player1, player2, width=4, height=4)
 
     # place player 1 on the board at row 2, column 3, then place player 2 on
     # the board at row 0, column 5; display the resulting board state.  Note
     # that the .apply_move() method changes the calling object in-place.
-    game.apply_move((5, 5))
+    game.apply_move((0, 1))
     game.apply_move((2, 2))
     print(game.to_string())
 
