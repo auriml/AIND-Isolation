@@ -340,14 +340,21 @@ class AlphaBetaPlayer(IsolationPlayer):
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
         best_move = (-1, -1)
+        depth = 1
+        cutoff = float("-inf")
 
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            return self.alphabeta(game, depth=self.search_depth )
 
+            while True :
+                m = self.alphabeta(game,depth)
+                if m:
+                   best_move = m
+                depth += 1
         except SearchTimeout:
-            pass  # Handle any actions required after timeout as needed
+            print("------------> Timeout, best move  " +  str(best_move)  + " depth: " + str(depth))
+            return best_move  # Handle any actions required after timeout as needed
 
         # Return the best move from the last completed search iteration
         return best_move
@@ -409,15 +416,19 @@ class AlphaBetaPlayer(IsolationPlayer):
             return (-1, -1)
 
 
+        alpha = float("-inf")
+        beta = float("inf")
+        move = None
+        for m in legal_moves:
+            value = self.min_value(game.forecast_move(m),depth, alpha, beta)
+            if value > alpha:
+                  alpha = value
+                  move = m
 
-        _,move = max([(self.max_value(game.forecast_move(m), depth, alpha=float("-inf"), beta=float("inf")), m) for m in legal_moves])
+        print("--> alphabeta move: " + str(move) + " -max depth: " + str(depth) + " -utility: " + str(alpha))
+        return  move
 
-        print ("for board state: " )
-        print ( game.to_string())
-        print("--> alphabeta move: " + str(move))
-        return   move
-
-    def max_value(self, game, depth, alpha=float("-inf"), beta=float("inf")) :
+    def max_value(self, game, depth, alpha, beta) :
 
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
@@ -426,28 +437,26 @@ class AlphaBetaPlayer(IsolationPlayer):
         legal_moves = game.get_legal_moves(game.active_player)
 
         depth -= 1
-        print("depth " + str(depth))
 
-        if not legal_moves:
-            print ("leaf max")
+        if not legal_moves or depth == 0:
             v =  self.score(game, self )
-            print(str(v))
             return v
 
-        print("legal moves for max " + str(game.active_player) + ": " + str(legal_moves))
+        print("---> legal moves for max: "  + str(legal_moves))
         v = float("-inf")
 
         for m in legal_moves:
             v =max(v, self.min_value(game.forecast_move(m), depth, alpha=alpha, beta=beta) )
             if v >= beta:
-                print("max choose move (v  >= Beta):  " + str(m) + " with value: " + str(v))
+                print("-----> Alpha: " + str(alpha))
+                print("-----> Beta: " + str(beta))
                 return v
             alpha = max(alpha,v)
 
 
         return v
 
-    def min_value(self, game, depth, alpha=float("-inf"), beta=float("inf")):
+    def min_value(self, game, depth, alpha, beta):
         """Helper function of min_player
 
         Parameters
@@ -475,21 +484,19 @@ class AlphaBetaPlayer(IsolationPlayer):
 
 
         depth -= 1
-        print("depth " + str(depth))
 
-        if not legal_moves:
-            print ("leaf min")
+        if not legal_moves or depth == 0:
             v =  self.score(game, self )
-            print(str(v))
             return v
 
-        print("legal moves for min " + str(game.active_player) + ": " + str(legal_moves))
+        "---> legal moves for min: "  + str(legal_moves)
         v = float("inf")
 
         for m in legal_moves:
             v = min(v, self.max_value(game.forecast_move(m), depth, alpha=alpha, beta=beta) )
             if v <= alpha:
-                print("min choose move (v  <= Alpha):  " + str(m) + " with value: " + str(v))
+                print("-----> Alpha: " + str(alpha))
+                print("-----> Beta: " + str(beta))
                 return v
             beta = min(beta,v)
 

@@ -114,7 +114,6 @@ class Board(object):
         isolation.Board
             A deep copy of the board with the input move applied.
         """
-        print(str(self._active_player) + "forecast" + str(move) )
         new_board = self.copy()
         new_board.apply_move(move)
         return new_board
