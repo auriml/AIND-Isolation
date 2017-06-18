@@ -331,8 +331,7 @@ class Board(object):
                 curr_move = Board.NOT_MOVED
 
             if move_end < 0:
-                print ("exhasuted time")
-                #return self._inactive_player, move_history, "timeout"
+                return self._inactive_player, move_history, "timeout"
 
             if curr_move not in legal_player_moves:
                 if len(legal_player_moves) > 0:

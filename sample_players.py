@@ -258,22 +258,33 @@ if __name__ == "__main__":
 
     # create an isolation board (by default 7x7)
     #player1 = RandomPlayer()
-    player1 = AlphaBetaPlayer()
-    player2 = RandomPlayer()
-    game = Board(player1, player2, width=9, height=9)
+
+    player1 = AlphaBetaPlayer(score_fn=improved_score)
+    print("P1: " +str(player1))
+    player2 = AlphaBetaPlayer(score_fn=custom_score_3)
+    print("P2 custom: " +str(player2))
+    game = Board(player1, player2, width=7, height=7)
 
     # place player 1 on the board at row 2, column 3, then place player 2 on
     # the board at row 0, column 5; display the resulting board state.  Note
     # that the .apply_move() method changes the calling object in-place.
-    game.apply_move((4, 2))
-    game.apply_move((1, 5))
+
+
+    legal_moves = game.get_legal_moves()
+
+    move1 =  legal_moves[randint(0, len(legal_moves) - 1)]
+    game.apply_move(move1)
+    move1 =  legal_moves[randint(0, len(legal_moves) - 1)]
+    game.apply_move(move1)
+
+
     print(game.to_string())
 
     # players take turns moving on the board, so player1 should be next to move
     assert(player1 == game.active_player)
 
     # get a list of the legal moves available to the active player
-    print(game.get_legal_moves())
+    #print(game.get_legal_moves())
 
     # get a successor of the current state by making a copy of the board and
     # applying a move. Notice that this does NOT change the calling object
